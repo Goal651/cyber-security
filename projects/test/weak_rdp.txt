@@ -1,0 +1,1 @@
+# Hydra v9.5 run at 2025-03-13 14:50:15 on 192.168.56.0 rdp (hydra -L /tmp/default_passwords.lst -P /tmp/default_passwords.lst -o test/weak_rdp.txt -t 4 rdp://192.168.56.0/24)
