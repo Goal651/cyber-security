@@ -1,1 +1,0 @@
-# Hydra v9.5 run at 2025-03-13 14:51:19 on 192.168.56.0 telnet (hydra -L /tmp/default_passwords.lst -P /tmp/default_passwords.lst -o test/weak_telnet.txt -t 4 telnet://192.168.56.0/24)
