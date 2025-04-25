@@ -156,37 +156,6 @@ def network_scan(ip_range, output_callback):
 def local_pc_scan(output_callback):
     output_callback("Scanning local PC for vulnerabilities...\n")
     findings = []
-    try:
-        output_callback("Checking for outdated packages...\n")
-        subprocess.run("apt update", shell=True)
-        subprocess.run("apt list --upgradable", shell=True)
-        apt_result = subprocess.run(
-            "apt list --upgradable", shell=True, capture_output=True, text=True
-        )
-        if apt_result.returncode == 0:
-            outdated = len(
-                [
-                    line
-                    for line in apt_result.stdout.splitlines()
-                    if line.strip() and not line.startswith("Listing")
-                ]
-            )
-            if outdated > 0:
-                findings.append(
-                    {
-                        "check": "Outdated packages",
-                        "issue": f"{outdated} packages need updating",
-                        "severity": "High",
-                    }
-                )
-    except Exception as e:
-        findings.append(
-            {
-                "check": "Outdated packages",
-                "issue": f"Unable to check: {str(e)}",
-                "severity": "Unknown",
-            }
-        )
 
     if os.name == "posix" and os.access("/etc/shadow", os.R_OK):
         findings.append(
@@ -238,40 +207,13 @@ def local_pc_scan(output_callback):
             (f for f in findings if f["check"] == "Open ports"), None
         )
         if open_ports_finding and messagebox.askyesno(
-            "Action", "Do you want to close any open ports?"
+            "Action", "Click to open table button to close open portsif needed."
         ):
             actions = []
             open_ports = (
                 open_ports_finding["issue"].replace("Open ports: ", "").split(", ")
             )
-            for port in open_ports:
-                if messagebox.askyesno("Confirm", f"Close port {port}?"):
-                    try:
-                        output_callback(f"Checking processes on port {port}...\n")
-                        subprocess.run(f"lsof -i :{port}", shell=True)
-                        lsof_result = subprocess.run(
-                            f"lsof -i :{port}",
-                            shell=True,
-                            capture_output=True,
-                            text=True,
-                        )
-                        if lsof_result.returncode == 0 and lsof_result.stdout:
-                            lines = lsof_result.stdout.splitlines()
-                            if len(lines) > 1:
-                                pid = lines[1].split()[1]
-                                service = lines[1].split()[0]
-                                if messagebox.askyesno(
-                                    "Confirm",
-                                    f"Stop {service} (PID: {pid}) on port {port}?",
-                                ):
-                                    subprocess.run(
-                                        f"kill {pid}", shell=True, check=True
-                                    )
-                                    actions.append(
-                                        f"Closed port {port} (stopped {service}, PID: {pid})"
-                                    )
-                    except Exception as e:
-                        output_callback(f"Error closing port {port}: {str(e)}\n")
+
             if actions:
                 filename = save_report(
                     "local_pc", "\n".join(details), "\n".join(actions)
